@@ -3,6 +3,9 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
@@ -25,6 +28,7 @@ import { fileIconUrl } from "@/modules/explorer/lib/iconResolver";
 import {
   leafIds,
   ptyIdForLeaf,
+  type SplitPosition,
   tabAgentStatus,
   useAgentActivityStore,
 } from "@/modules/terminal";
@@ -38,6 +42,7 @@ import {
   GitCompareIcon,
   Globe02Icon,
   IncognitoIcon,
+  LayoutTwoColumnIcon,
   Message02Icon,
   PencilEdit02Icon,
   Tick02Icon,
@@ -52,7 +57,7 @@ import {
   useState,
 } from "react";
 import { labelFor } from "./lib/tabLabel";
-import type { EditorTab, Tab } from "./lib/useTabs";
+import { type EditorTab, moveToSplitTargets, type Tab } from "./lib/useTabs";
 import { NewTabMenu } from "./NewTabMenu";
 
 type Props = {
@@ -77,9 +82,68 @@ type Props = {
   onRename: (id: number, title: string) => void;
   /** Move a dragged tab to a new position (insertion gap index 0..tabs.length). */
   onReorder: (fromId: number, toGapIndex: number) => void;
+  onMoveToSplit: (
+    sourceId: number,
+    destinationId: number,
+    position: SplitPosition,
+  ) => void;
   onOverrideLanguage?: (id: number, lang: string | null) => void;
   compact?: boolean;
 };
+
+const SPLIT_POSITIONS: { position: SplitPosition; label: string }[] = [
+  { position: "left", label: "Left" },
+  { position: "right", label: "Right" },
+  { position: "top", label: "Top" },
+  { position: "bottom", label: "Bottom" },
+];
+
+const MENU_ITEM_CLASS = "gap-2 rounded-xl px-2.5 py-1.5 text-[13px]";
+
+function MoveToSplitMenu({
+  tabs,
+  sourceId,
+  onMove,
+}: {
+  tabs: Tab[];
+  sourceId: number;
+  onMove: Props["onMoveToSplit"];
+}) {
+  const targets = moveToSplitTargets(tabs, sourceId);
+  if (targets.length === 0) return null;
+  return (
+    <ContextMenuSub>
+      <ContextMenuSubTrigger className={MENU_ITEM_CLASS}>
+        <HugeiconsIcon
+          icon={LayoutTwoColumnIcon}
+          size={13}
+          strokeWidth={1.75}
+        />
+        <span className="flex-1">Move to split…</span>
+      </ContextMenuSubTrigger>
+      <ContextMenuSubContent className="max-w-64 p-1">
+        {targets.map((target) => (
+          <ContextMenuSub key={target.id}>
+            <ContextMenuSubTrigger className={MENU_ITEM_CLASS}>
+              <span className="flex-1 truncate">{labelFor(target)}</span>
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="p-1">
+              {SPLIT_POSITIONS.map(({ position, label }) => (
+                <ContextMenuItem
+                  key={position}
+                  className={MENU_ITEM_CLASS}
+                  onSelect={() => onMove(sourceId, target.id, position)}
+                >
+                  {label}
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        ))}
+      </ContextMenuSubContent>
+    </ContextMenuSub>
+  );
+}
 
 export function TabBar({
   tabs,
@@ -98,6 +162,7 @@ export function TabBar({
   onPin,
   onRename,
   onReorder,
+  onMoveToSplit,
   onOverrideLanguage,
   compact,
 }: Props) {
@@ -528,6 +593,11 @@ export function TabBar({
                           />
                           <span className="flex-1">Rename</span>
                         </ContextMenuItem>
+                        <MoveToSplitMenu
+                          tabs={tabs}
+                          sourceId={t.id}
+                          onMove={onMoveToSplit}
+                        />
                         {tabs.length > 1 && (
                           <>
                             <ContextMenuSeparator />

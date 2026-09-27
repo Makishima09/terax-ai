@@ -14,6 +14,7 @@ import {
   type AgentLaunchRequest,
   AgentNotificationsBridge,
   findAgentLauncher,
+  moveAgentLeafToTab,
   nextAttentionTarget,
   validateAgentLaunchCommand,
 } from "@/modules/agents";
@@ -92,6 +93,7 @@ import {
   navigateFocusedBlocks,
   type PaneBounds,
   ptyIdForLeaf,
+  type SplitPosition,
   type TerminalPaneHandle,
   useAgentActivityStore,
   useTerminalFileDrop,
@@ -176,6 +178,7 @@ export default function App() {
     focusNextPaneInTab,
     swapActivePaneInDirection,
     splitActivePane,
+    moveTabIntoSplit,
     closeActivePane,
     closePaneByLeaf,
     resetWorkspace,
@@ -1201,6 +1204,14 @@ export default function App() {
     [reorderTab],
   );
 
+  const handleMoveTabIntoSplit = useCallback(
+    (sourceId: number, destinationId: number, position: SplitPosition) => {
+      const leafId = moveTabIntoSplit(sourceId, destinationId, position);
+      if (leafId !== null) moveAgentLeafToTab(leafId, destinationId);
+    },
+    [moveTabIntoSplit],
+  );
+
   const handleNewTabInSpace = useCallback(
     (spaceId: string) => {
       const root = useSpaces
@@ -1400,6 +1411,7 @@ export default function App() {
               onPin={pinTab}
               onRename={handleRenameTab}
               onReorder={reorderTabByGap}
+              onMoveToSplit={handleMoveTabIntoSplit}
               onToggleSidebar={toggleSidebar}
               onOpenCommandPalette={() => openCommandPalette("commands")}
               onActivateAgent={onActivateAgent}

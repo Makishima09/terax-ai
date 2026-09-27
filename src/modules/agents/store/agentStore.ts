@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useManagedAgentsStore } from "./managedAgentsStore";
 import type {
   AgentNotification,
   AgentSession,
@@ -131,4 +132,10 @@ export function nextAttentionTarget(): { tabId: number; leafId: number } | null 
     .sort((a, b) => (b.attentionSince ?? 0) - (a.attentionSince ?? 0));
   const t = waiting[0];
   return t ? { tabId: t.tabId, leafId: t.leafId } : null;
+}
+
+/** Points every agent record for `leafId` at the tab now hosting that pane. */
+export function moveAgentLeafToTab(leafId: number, tabId: number): void {
+  useAgentStore.getState().moveLeafToTab(leafId, tabId);
+  useManagedAgentsStore.getState().moveLeafToTab(leafId, tabId);
 }
