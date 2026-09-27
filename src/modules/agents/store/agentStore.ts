@@ -17,6 +17,7 @@ type AgentStoreState = {
   start: (leafId: number, tabId: number, agent: string) => void;
   setStatus: (leafId: number, status: AgentStatus) => void;
   finish: (leafId: number) => void;
+  moveLeafToTab: (leafId: number, tabId: number) => void;
   setLocalAgent: (state: LocalAgentState) => void;
   pushNotification: (
     n: Omit<AgentNotification, "id" | "at" | "read">,
@@ -73,6 +74,26 @@ export const useAgentStore = create<AgentStoreState>((set) => ({
       const next = { ...s.sessions };
       delete next[leafId];
       return { sessions: next };
+    }),
+
+  moveLeafToTab: (leafId, tabId) =>
+    set((s) => {
+      const session = s.sessions[leafId];
+      const moveSession = session !== undefined && session.tabId !== tabId;
+      const moveNotifications = s.notifications.some(
+        (n) => n.leafId === leafId && n.tabId !== tabId,
+      );
+      if (!moveSession && !moveNotifications) return s;
+      return {
+        ...(moveSession && {
+          sessions: { ...s.sessions, [leafId]: { ...session, tabId } },
+        }),
+        ...(moveNotifications && {
+          notifications: s.notifications.map((n) =>
+            n.leafId === leafId ? { ...n, tabId } : n,
+          ),
+        }),
+      };
     }),
 
   setLocalAgent: (state) =>
