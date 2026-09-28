@@ -45,6 +45,7 @@ import {
   LayoutTwoColumnIcon,
   Message02Icon,
   PencilEdit02Icon,
+  SquareArrowUpRightIcon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -59,9 +60,15 @@ import {
 import {
   labelFor,
   PANE_LABEL_SEPARATOR,
+  paneLabels,
   splitPaneLabels,
 } from "./lib/tabLabel";
-import { type EditorTab, moveToSplitTargets, type Tab } from "./lib/useTabs";
+import {
+  type EditorTab,
+  moveToSplitTargets,
+  type Tab,
+  type TerminalTab,
+} from "./lib/useTabs";
 import { NewTabMenu } from "./NewTabMenu";
 
 type Props = {
@@ -91,6 +98,7 @@ type Props = {
     destinationId: number,
     position: SplitPosition,
   ) => void;
+  onMovePaneToNewTab: (tabId: number, leafId: number) => void;
   onOverrideLanguage?: (id: number, lang: string | null) => void;
   compact?: boolean;
 };
@@ -149,6 +157,42 @@ function MoveToSplitMenu({
   );
 }
 
+function MovePaneToNewTabMenu({
+  tab,
+  onMove,
+}: {
+  tab: TerminalTab;
+  onMove: Props["onMovePaneToNewTab"];
+}) {
+  if (tab.paneTree.kind === "leaf") return null;
+  return (
+    <ContextMenuSub>
+      <ContextMenuSubTrigger className={MENU_ITEM_CLASS}>
+        <HugeiconsIcon
+          icon={SquareArrowUpRightIcon}
+          size={13}
+          strokeWidth={1.75}
+        />
+        <span className="flex-1">Move pane to new tab</span>
+      </ContextMenuSubTrigger>
+      <ContextMenuSubContent className="max-w-64 p-1">
+        {paneLabels(tab).map((pane) => (
+          <ContextMenuItem
+            key={pane.leafId}
+            className={MENU_ITEM_CLASS}
+            onSelect={() => onMove(tab.id, pane.leafId)}
+          >
+            <span className="flex-1 truncate">{pane.name}</span>
+            {pane.active && (
+              <span className="text-[11px] text-muted-foreground">active</span>
+            )}
+          </ContextMenuItem>
+        ))}
+      </ContextMenuSubContent>
+    </ContextMenuSub>
+  );
+}
+
 export function TabBar({
   tabs,
   activeId,
@@ -167,6 +211,7 @@ export function TabBar({
   onRename,
   onReorder,
   onMoveToSplit,
+  onMovePaneToNewTab,
   onOverrideLanguage,
   compact,
 }: Props) {
@@ -599,6 +644,10 @@ export function TabBar({
                           tabs={tabs}
                           sourceId={t.id}
                           onMove={onMoveToSplit}
+                        />
+                        <MovePaneToNewTabMenu
+                          tab={t}
+                          onMove={onMovePaneToNewTab}
                         />
                         {tabs.length > 1 && (
                           <>

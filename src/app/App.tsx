@@ -179,6 +179,7 @@ export default function App() {
     swapActivePaneInDirection,
     splitActivePane,
     moveTabIntoSplit,
+    movePaneToNewTab,
     closeActivePane,
     closePaneByLeaf,
     resetWorkspace,
@@ -1212,6 +1213,14 @@ export default function App() {
     [moveTabIntoSplit],
   );
 
+  const handleMovePaneToNewTab = useCallback(
+    (tabId?: number, leafId?: number) => {
+      const moved = movePaneToNewTab(tabId, leafId);
+      if (moved) moveAgentLeafToTab(moved.leafId, moved.tabId);
+    },
+    [movePaneToNewTab],
+  );
+
   const handleNewTabInSpace = useCallback(
     (spaceId: string) => {
       const root = useSpaces
@@ -1268,6 +1277,7 @@ export default function App() {
             closeActiveTabOrPane: handleCloseTabOrPane,
             splitPaneRight: () => splitActivePaneInActiveTab("row"),
             splitPaneDown: () => splitActivePaneInActiveTab("col"),
+            movePaneToNewTab: () => handleMovePaneToNewTab(),
             focusSearch: () => searchInlineRef.current?.focus(),
             focusExplorerSearch: () => explorerRef.current?.focusSearch(),
             toggleSidebar,
@@ -1298,6 +1308,7 @@ export default function App() {
       toggleSourceControl,
       handleCloseTabOrPane,
       splitActivePaneInActiveTab,
+      handleMovePaneToNewTab,
       toggleSidebar,
       toggleHiddenFiles,
       togglePanelAndFocus,
@@ -1412,6 +1423,7 @@ export default function App() {
               onRename={handleRenameTab}
               onReorder={reorderTabByGap}
               onMoveToSplit={handleMoveTabIntoSplit}
+              onMovePaneToNewTab={handleMovePaneToNewTab}
               onToggleSidebar={toggleSidebar}
               onOpenCommandPalette={() => openCommandPalette("commands")}
               onActivateAgent={onActivateAgent}

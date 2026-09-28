@@ -52,6 +52,7 @@ type Props = {
     destinationId: number,
     position: SplitPosition,
   ) => void;
+  onMovePaneToNewTab: (tabId: number, leafId: number) => void;
   onOverrideLanguage?: (id: number, lang: string | null) => void;
   onToggleSidebar: () => void;
   onOpenCommandPalette: () => void;
@@ -83,6 +84,7 @@ export function Header({
   onRename,
   onReorder,
   onMoveToSplit,
+  onMovePaneToNewTab,
   onOverrideLanguage,
   onToggleSidebar,
   onOpenCommandPalette,
@@ -193,6 +195,7 @@ export function Header({
           onRename={onRename}
           onReorder={onReorder}
           onMoveToSplit={onMoveToSplit}
+          onMovePaneToNewTab={onMovePaneToNewTab}
           onOverrideLanguage={onOverrideLanguage}
           compact={compact}
         />

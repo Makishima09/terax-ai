@@ -283,7 +283,7 @@ function directionalTarget(
   return candidates[0]?.id ?? null;
 }
 
-function findLeaf(node: PaneNode, id: PaneId): Extract<PaneNode, { kind: "leaf" }> | null {
+export function findLeaf(node: PaneNode, id: PaneId): Extract<PaneNode, { kind: "leaf" }> | null {
   if (isLeaf(node)) return node.id === id ? node : null;
   for (const child of node.children) {
     const found = findLeaf(child, id);
