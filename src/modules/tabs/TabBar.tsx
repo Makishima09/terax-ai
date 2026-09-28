@@ -56,7 +56,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { labelFor } from "./lib/tabLabel";
+import {
+  labelFor,
+  PANE_LABEL_SEPARATOR,
+  splitPaneLabels,
+} from "./lib/tabLabel";
 import { type EditorTab, moveToSplitTargets, type Tab } from "./lib/useTabs";
 import { NewTabMenu } from "./NewTabMenu";
 
@@ -532,9 +536,7 @@ export function TabBar({
                     )}
                     {/* Preview tabs use italic to signal the transient state,
                         matching the visual convention from VSCode. */}
-                    <span className={cn("truncate", isPreview && "italic")}>
-                      {labelFor(t)}
-                    </span>
+                    <TabLabel tab={t} italic={isPreview} />
                     {t.kind === "editor" && t.dirty ? (
                       <span
                         aria-label="Unsaved changes"
@@ -667,6 +669,29 @@ export function TabBar({
         />
       </div>
     </div>
+  );
+}
+
+function TabLabel({ tab, italic }: { tab: Tab; italic: boolean }) {
+  const panes = splitPaneLabels(tab);
+  if (!panes) {
+    return (
+      <span className={cn("truncate", italic && "italic")}>
+        {labelFor(tab)}
+      </span>
+    );
+  }
+  return (
+    <span className="truncate" title={labelFor(tab)}>
+      {panes.map((pane, i) => (
+        <Fragment key={pane.leafId}>
+          {i > 0 && <span className="opacity-40">{PANE_LABEL_SEPARATOR}</span>}
+          <span className={pane.active ? undefined : "opacity-60"}>
+            {pane.name}
+          </span>
+        </Fragment>
+      ))}
+    </span>
   );
 }
 
