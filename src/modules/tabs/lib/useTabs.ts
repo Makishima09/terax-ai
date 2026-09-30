@@ -1488,19 +1488,18 @@ export function useTabs(initial?: Partial<TerminalTab>) {
         destinationTabId,
       );
       if (!plan.ok) return null;
-      const splitId = nextIdRef.current++;
-      setTabs((curr) => {
-        const next = applyMoveTabIntoSplit(
-          curr,
-          sourceTabId,
-          destinationTabId,
-          position,
-          splitId,
-        );
-        if (!next) return curr;
-        setActiveId(destinationTabId);
-        return next;
-      });
+      const next = applyMoveTabIntoSplit(
+        tabsRef.current,
+        sourceTabId,
+        destinationTabId,
+        position,
+        nextIdRef.current++,
+      );
+      if (!next) return null;
+      tabsRef.current = next;
+      activeIdRef.current = destinationTabId;
+      setTabs(next);
+      setActiveId(destinationTabId);
       return plan.leaf.id;
     },
     [],
@@ -1521,17 +1520,17 @@ export function useTabs(initial?: Partial<TerminalTab>) {
       );
       if (!plan.ok) return null;
       const newTabId = nextIdRef.current++;
-      setTabs((curr) => {
-        const next = applyMovePaneToNewTab(
-          curr,
-          sourceId,
-          movedLeafId,
-          newTabId,
-        );
-        if (!next) return curr;
-        setActiveId(newTabId);
-        return next;
-      });
+      const next = applyMovePaneToNewTab(
+        tabsRef.current,
+        sourceId,
+        movedLeafId,
+        newTabId,
+      );
+      if (!next) return null;
+      tabsRef.current = next;
+      activeIdRef.current = newTabId;
+      setTabs(next);
+      setActiveId(newTabId);
       return { tabId: newTabId, leafId: movedLeafId };
     },
     [],
